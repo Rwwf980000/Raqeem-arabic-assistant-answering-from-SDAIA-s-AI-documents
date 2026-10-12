@@ -1,3 +1,4 @@
+# Raqeem
 # SDAIA RAG Assistant
 
 Ask questions (Arabic or English) about SDAIA's AI documents. Runs fully local and free:
