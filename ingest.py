@@ -26,7 +26,7 @@ def clean(text: str) -> str:
 
 def load_pdfs():
     docs = []
-    for pdf in sorted(config.DATA_DIR.glob("*.pdf")):
+    for pdf in sorted(config.DATA_DIR.rglob("*.pdf")):  # rglob also looks in subfolders
         pages = PyPDFLoader(str(pdf)).load()
         for p in pages:
             p.page_content = clean(p.page_content)
@@ -40,7 +40,7 @@ def load_pdfs():
 def build_index(embeddings=None):
     docs = load_pdfs()
     if not docs:
-        raise SystemExit(f"No PDFs found in {config.DATA_DIR}. Run download_docs.py first.")
+        raise SystemExit(f"No PDFs found in {config.DATA_DIR}. Check DATA_DIR in config.py.")
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=config.CHUNK_SIZE,

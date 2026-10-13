@@ -11,7 +11,10 @@ LLM_MODEL = os.getenv("LLM_MODEL", "qwen2.5:7b")
 EMBED_MODEL = os.getenv("EMBED_MODEL", "bge-m3")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
-DATA_DIR = Path(os.getenv("DATA_DIR", BASE_DIR / "data"))
+# Where your PDFs live. The r"..." (raw string) keeps Windows backslashes as-is,
+# and Path handles the spaces in the folder names.
+DEFAULT_DATA_DIR = r"C:\Users\RAWAF\OneDrive - University of Jeddah\Desktop\sdaia AI files"
+DATA_DIR = Path(os.getenv("DATA_DIR", DEFAULT_DATA_DIR))
 DB_DIR = Path(os.getenv("DB_DIR", BASE_DIR / "chroma_db"))
 COLLECTION = "sdaia_ai"
 
