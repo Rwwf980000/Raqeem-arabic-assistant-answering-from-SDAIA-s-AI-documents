@@ -1,0 +1,24 @@
+# SDAIA documents: never commit (licence)
+*.pdf
+data/
+
+# Vector index and saved runs (contain document text)
+chroma_db*/
+golden_runs.json
+golden_grades.json
+golden_dataset.py
+*.csv
+
+# Python / notebooks
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+.env
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
