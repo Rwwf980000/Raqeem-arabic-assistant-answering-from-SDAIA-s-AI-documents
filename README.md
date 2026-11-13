@@ -97,6 +97,40 @@ Arabic PDF text needed cleaning: presentation-form letters (ﻻ, ﺍ…) normali
 
 ---
 
+## Challenges and how I solved them
+
+49 problems are logged in full in [`docs/problems-log.md`](docs/problems-log.md). These are the ones that shaped the system.
+
+**1. Arabic PDFs came out as broken text.**
+Two documents extracted as Arabic *presentation forms* (the joined glyph shapes, e.g. ﻻ ﺍ), so a word never matched itself. Others were full of tatweel (`مــبــادئ`) and repeated letters (`المؤشررررر`), and one document had no readable text layer at all.
+*Solution:* Unicode NFKC normalisation, tatweel removal and squeezing repeated letters before indexing. The unreadable document was excluded rather than indexed as noise.
+
+**2. Retrieval looked broken (20% hit rate), but the evaluation was.**
+Every setting and every embedding model scored exactly 20%. Looking at the misses showed the search *was* finding the right pages; the test compared file names literally, and Google Drive had renamed the files (`ai-principles (1).pdf`). Later, a "miss" turned out to be a ground-truth label that listed one page when the answer spanned two.
+*Solution:* fixed file names and labels, and verified every expected page by reading the PDF. *Lesson:* check the evaluation before tuning the system.
+
+**3. Vector search alone was not enough.**
+bge-m3 reached 80% on the first test questions; MMR (diverse results) dropped to 60% because it pushed out the right chunk for being similar to another one. Keyword search (BM25) alone scored 20 to 40% because Arabic words carry prefixes such as "ال".
+*Solution:* BM25 with Arabic normalisation (strip "ال" and diacritics, unify أإآ/ا, ة/ه, ى/ي) combined with bge-m3, then a cross-encoder reranker (`bge-reranker-v2-m3`). The reranker was the biggest single gain, and once it was in place the search weights and similarity threshold stopped mattering. A 0.4 threshold even removed a correct chunk before the reranker could see it, so it was dropped.
+
+**4. Questions with typos, dialect, Arabizi or English.**
+Real users write `المخاظر` instead of `المخاطر`, or `eish ma3na mabda2 al nazaha`. A rule-based spell corrector "fixed" correct words (`السبعة` → `الساعة`), and letting the LLM rewrite freely made it guess (`المخاظر` → "data storage"; a fixed vocabulary list in the prompt pushed it to the wrong term `النضج`).
+*Solution:* the LLM rewrites the question, but guided by *"did you mean"* hints computed from words that actually exist in the documents and differ by one letter. The model decides whether to accept each hint, and the search runs with **both** the original and the rewritten question, so a bad rewrite cannot lose a good result. Typo questions went from 57% to 86%+.
+
+**5. "List all the …" questions came back incomplete.**
+Questions like "what are the seven principles?" or "what are the main sections?" have their items spread over many pages, so the top 5 chunks only held some of them, and the model once mislabelled a principle. Table-of-contents pages did not help because their extracted text is a jumble of numbers.
+*Solution:* one short, hand-written outline chunk per document listing its sections and pages. It reaches the top 5 for these questions and gives the model the full list in one place.
+
+**6. The rewrite step took up to 23 seconds.**
+Rewriting and answering used the same model but different context sizes, and Ollama reloads a model whenever its context size changes, so it loaded twice per question.
+*Solution:* one shared `num_ctx` for both calls. Rewriting dropped to under 1 second.
+
+**7. Tuning on the same questions I tested on.**
+After reaching 100% on the 26 tuning questions, there was no way to know whether that was real or just fitted to those questions. One "fix" (penalising the rewritten question) had already helped one question and broken another.
+*Solution:* a separate golden dataset of 84 questions from pages never used for tuning, with reference answers, required points, jailbreaks, unanswerable and false-premise questions, graded by rules plus an LLM judge from a different model family (`gemma3:12b`). It gave the honest numbers above: 91% retrieval and 0.99 correctness, and it exposed the remaining weaknesses listed below.
+
+---
+
 ## Run it
 
 The notebook runs end to end on **Google Colab with a free T4 GPU**.
