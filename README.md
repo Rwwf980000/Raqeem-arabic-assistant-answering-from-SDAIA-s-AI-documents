@@ -13,6 +13,27 @@ Built as a learning project to understand every part of a RAG system: loading an
 
 ---
 
+## Demo
+
+A simple chat interface built with Gradio (section 11 of the notebook). The answer streams in word by word, and a collapsible box under it lists the pages it was built from and how long the search and the answer took.
+
+<p align="center">
+  <img src="docs/images/raqeem-answer-with-sources.png" alt="Raqeem answering a question about deepfake risks, with its five sources listed under the answer" width="90%">
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/raqeem-home.png" alt="Start screen with example questions in Arabic, English and Arabizi"></td>
+    <td width="50%"><img src="docs/images/raqeem-streaming.png" alt="Raqeem searching the documents before it starts writing the answer"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Start screen with example questions (Arabic, English, Arabizi)</sub></td>
+    <td align="center"><sub>Searching the documents before the answer starts streaming</sub></td>
+  </tr>
+</table>
+
+---
+
 ## Results at a glance
 
 Evaluated on a **held-out golden dataset of 84 questions** that were never used for tuning, covering 9 question types (facts, definitions, numbers, lists, tables, cross-document, unanswerable, false premise, jailbreak), across all 8 documents.
@@ -145,6 +166,8 @@ The notebook runs end to end on **Google Colab with a free T4 GPU**.
 ask("ما هي مبادئ أخلاقيات الذكاء الاصطناعي التي وضعتها سدايا؟")
 ```
 
+6. Optional: run section 11 to open the chat interface. It prints a temporary `gradio.live` link for testing.
+
 Section 9 measures retrieval on your own test questions; section 10 runs the full evaluation if you provide a golden dataset in the same format.
 
 ### Documents used
@@ -156,10 +179,11 @@ Section 9 measures retrieval on your own test questions; section 10 runs the ful
 ## Repository layout
 
 ```
-notebooks/raqeem_colab.ipynb   final notebook: setup, indexing, ask(), tuning, evaluation
+notebooks/raqeem_colab.ipynb   final notebook: setup, indexing, ask(), tuning, evaluation, chat UI
 docs/evaluation-results.md     every evaluation run with numbers (Arabic)
 docs/problems-log.md           49 problems met while building it: cause and fix (Arabic)
 docs/golden-dataset-guide.md   how each of the 15 metrics is measured (Arabic)
+docs/images/                   screenshots of the chat interface
 requirements.txt
 ```
 
